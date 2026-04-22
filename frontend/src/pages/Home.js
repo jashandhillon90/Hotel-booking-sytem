@@ -1,16 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Home() {
   const navigate = useNavigate();
+
+  const [city, setCity] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+
+  const handleSearch = () => {
+    if (!city) return alert("Enter city");
+
+    if (!checkIn || !checkOut) {
+      return alert("Select dates");
+    }
+
+    if (new Date(checkIn) < new Date().setHours(0, 0, 0, 0)) {
+      return alert("❌ Past date not allowed");
+    }
+
+    if (new Date(checkOut) <= new Date(checkIn)) {
+      return alert("❌ Checkout must be after checkin");
+    }
+
+    navigate(`/rooms?city=${city}`);
+  };
 
   return (
     <div style={{ fontFamily: "Segoe UI, sans-serif" }}>
 
       {/* HERO */}
       <section style={hero}>
-        <h1 style={heroTitle}>Luxury Stay, Perfect Comfort ✨</h1>
-        <p style={heroSub}>Book hotels at best prices instantly</p>
+        <h1 style={heroTitle}>Luxury Stay </h1>
+        <p style={heroSub}>Find best hotels instantly</p>
 
         <div style={{ marginTop: "25px" }}>
           <button style={primaryBtn} onClick={() => navigate("/rooms")}>
@@ -18,7 +40,7 @@ function Home() {
           </button>
 
           <button style={secondaryBtn} onClick={() => navigate("/login")}>
-            Sign In
+            Login
           </button>
         </div>
       </section>
@@ -26,10 +48,34 @@ function Home() {
       {/* SEARCH */}
       <div style={searchWrapper}>
         <div style={searchBox}>
-          <input placeholder="City / Hotel" style={input} />
-          <input type="date" style={input} />
-          <input type="date" style={input} />
-          <button style={searchBtn}>Search</button>
+
+          <input
+            placeholder="City / Hotel"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            style={input}
+          />
+
+          <input
+            type="date"
+            value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+            style={input}
+            min={new Date().toISOString().split("T")[0]}
+          />
+
+          <input
+            type="date"
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            style={input}
+            min={checkIn || new Date().toISOString().split("T")[0]}
+          />
+
+          <button style={searchBtn} onClick={handleSearch}>
+            Search
+          </button>
+
         </div>
       </div>
 
@@ -47,24 +93,30 @@ function Home() {
         </div>
       </section>
 
+      {/* ABOUT */}
+      <section style={section}>
+        <h2 style={heading}>About LuxeStay</h2>
+        <p style={{ maxWidth: "600px", margin: "auto" }}>
+          LuxeStay helps you book premium hotels at the best prices.
+          Experience comfort, luxury and smooth booking with us.
+        </p>
+      </section>
+
       {/* FEATURES */}
       <section style={section}>
-        <h2 style={heading}>Why Choose LuxeStay?</h2>
+        <h2 style={heading}>Why Choose Us?</h2>
 
         <div style={grid}>
-          {features.map((f, i) => (
-            <div key={i} style={card}>
-              <div style={{ fontSize: "30px" }}>{f.icon}</div>
-              <h3>{f.title}</h3>
-              <p>{f.desc}</p>
-            </div>
-          ))}
+          <div style={card}>🏆 Premium Service</div>
+          <div style={card}>💰 Best Price</div>
+          <div style={card}>⚡ Instant Booking</div>
+          <div style={card}>📞 24/7 Support</div>
         </div>
       </section>
 
       {/* ROOMS */}
       <section style={section}>
-        <h2 style={heading}>Featured Rooms 🏨</h2>
+        <h2 style={heading}>Featured Rooms </h2>
 
         <div style={grid}>
           {rooms.map((r, i) => (
@@ -81,70 +133,20 @@ function Home() {
       </section>
 
       {/* STATS */}
-      <div style={stats}>
+      <section style={stats}>
         <Stat n="1000+" t="Guests" />
         <Stat n="50+" t="Rooms" />
         <Stat n="5⭐" t="Rating" />
         <Stat n="5000+" t="Reviews" />
-      </div>
-
-      {/* TESTIMONIAL */}
-      <section style={testimonial}>
-        <h2>What Our Customers Say</h2>
-        <p>
-          “Amazing experience! Rooms were clean and luxurious. Highly recommend!”
-        </p>
-        ⭐⭐⭐⭐⭐
       </section>
 
       {/* CTA */}
       <section style={cta}>
         <h2>Ready to Book?</h2>
         <button style={primaryBtn} onClick={() => navigate("/rooms")}>
-          Book Your Stay
+          Book Now
         </button>
       </section>
-
-      {/* FOOTER */}
-      <footer style={footer}>
-        <div style={footerGrid}>
-
-          <div>
-            <h2 style={{ color: "#f59e0b" }}>LuxeStay</h2>
-            <p style={footerText}>
-              Book luxury hotels at best prices. Experience comfort & elegance.
-            </p>
-          </div>
-
-          <div>
-            <h3>About</h3>
-            <p style={footerText}>Our Story</p>
-            <p style={footerText}>Careers</p>
-            <p style={footerText}>Press</p>
-          </div>
-
-          <div>
-            <h3>Quick Links</h3>
-            <p style={footerText}>Home</p>
-            <p style={footerText}>Rooms</p>
-            <p style={footerText}>Booking</p>
-          </div>
-
-          <div>
-            <h3>Contact</h3>
-            <p style={footerText}>📍 India</p>
-            <p style={footerText}>📧 support@luxestay.com</p>
-            <p style={footerText}>📞 +91 9876543210</p>
-          </div>
-
-        </div>
-
-        <hr style={{ margin: "30px 0", borderColor: "#333" }} />
-
-        <p style={{ textAlign: "center", color: "#aaa" }}>
-          © 2026 LuxeStay. All rights reserved.
-        </p>
-      </footer>
 
     </div>
   );
@@ -152,43 +154,15 @@ function Home() {
 
 /* DATA */
 const destinations = [
-  {
-    name: "Goa",
-    img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-  },
-  {
-    name: "Manali",
-    img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
-  },
-  {
-    name: "Mumbai",
-    img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66",
-  },
+  { name: "Goa", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e" },
+  { name: "Manali", img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470" },
+  { name: "Mumbai", img: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66" },
 ];
 
 const rooms = [
-  {
-    name: "Luxury Suite",
-    price: 5000,
-    img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2",
-  },
-  {
-    name: "Deluxe Room",
-    price: 3000,
-    img: "https://images.unsplash.com/photo-1590490360182-c33d57733427",
-  },
-  {
-    name: "Budget Room",
-    price: 1500,
-    img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-  },
-];
-
-const features = [
-  { icon: "🏆", title: "Premium", desc: "Top quality service" },
-  { icon: "💰", title: "Best Price", desc: "Affordable deals" },
-  { icon: "⚡", title: "Fast Booking", desc: "Quick process" },
-  { icon: "📞", title: "Support", desc: "24/7 help" },
+  { name: "Luxury Suite", price: 5000, img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2" },
+  { name: "Deluxe Room", price: 3000, img: "https://images.unsplash.com/photo-1590490360182-c33d57733427" },
+  { name: "Budget Room", price: 1500, img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b" },
 ];
 
 function Stat({ n, t }) {
@@ -220,14 +194,14 @@ const primaryBtn = {
   padding: "12px 25px",
   background: "#f59e0b",
   color: "white",
-  borderRadius: "6px",
+  borderRadius: "8px",
   marginRight: "10px",
 };
 
 const secondaryBtn = {
   padding: "12px 25px",
   background: "white",
-  borderRadius: "6px",
+  borderRadius: "8px",
 };
 
 const searchWrapper = {
@@ -239,23 +213,23 @@ const searchWrapper = {
 const searchBox = {
   background: "white",
   padding: "15px",
-  borderRadius: "10px",
+  borderRadius: "12px",
   display: "flex",
   gap: "10px",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+  boxShadow: "0 15px 40px rgba(0,0,0,0.2)",
 };
 
 const input = {
-  padding: "10px",
+  padding: "12px",
   border: "1px solid #ddd",
-  borderRadius: "6px",
+  borderRadius: "8px",
 };
 
 const searchBtn = {
   background: "#f59e0b",
   color: "white",
-  padding: "10px 20px",
-  borderRadius: "6px",
+  padding: "12px 20px",
+  borderRadius: "8px",
 };
 
 const section = { padding: "60px 20px", textAlign: "center" };
@@ -267,17 +241,9 @@ const grid = {
   gap: "20px",
 };
 
-const imageCard = {
-  position: "relative",
-  borderRadius: "10px",
-  overflow: "hidden",
-};
+const imageCard = { position: "relative", borderRadius: "10px", overflow: "hidden" };
 
-const img = {
-  width: "100%",
-  height: "200px",
-  objectFit: "cover",
-};
+const img = { width: "100%", height: "200px", objectFit: "cover" };
 
 const overlay = {
   position: "absolute",
@@ -310,33 +276,11 @@ const stats = {
   padding: "40px",
 };
 
-const testimonial = {
-  padding: "50px",
-  textAlign: "center",
-};
-
 const cta = {
   background: "#2d5a8c",
   color: "white",
   textAlign: "center",
   padding: "60px",
-};
-
-const footer = {
-  background: "#0f172a",
-  color: "white",
-  padding: "50px 20px",
-};
-
-const footerGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-  gap: "30px",
-};
-
-const footerText = {
-  fontSize: "14px",
-  color: "#ccc",
 };
 
 export default Home;

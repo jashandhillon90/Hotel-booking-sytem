@@ -5,10 +5,11 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
+import roomRoutes from "./routes/roomRoutes.js";
 
 dotenv.config();
 
-const app = express();
+const app = express(); // ✅ PEHLE APP BANAA
 
 /* MIDDLEWARE */
 app.use(cors());
@@ -17,17 +18,16 @@ app.use(express.json());
 /* ROUTES */
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
+app.use("/api/rooms", roomRoutes); // ✅ AB SAHI JAGAH
 
 app.get("/", (req, res) => {
   res.send("🚀 API Running...");
 });
 
-/* 🔥 CONNECT DATABASE FIRST */
+/* CONNECT DB */
 const startServer = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000
-    });
+    await mongoose.connect(process.env.MONGO_URI);
 
     console.log("✅ MongoDB Connected");
 
@@ -36,7 +36,7 @@ const startServer = async () => {
     });
 
   } catch (error) {
-    console.log("❌ DB Connection Failed:", error);
+    console.log("❌ DB Error:", error);
   }
 };
 

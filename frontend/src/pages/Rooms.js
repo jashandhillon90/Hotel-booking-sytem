@@ -1,101 +1,147 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Rooms() {
+  const [rooms, setRooms] = useState([]);
   const [search, setSearch] = useState("");
 
-  const rooms = [
-    {
-      name: "Deluxe Room",
-      price: 2000,
-      rating: 4.5,
-      img: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2",
-      type: "STANDARD",
-    },
-    {
-      name: "Premium Suite",
-      price: 3500,
-      rating: 4.8,
-      img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b",
-      type: "LUXURY",
-    },
-    {
-      name: "Royal Suite",
-      price: 5000,
-      rating: 5,
-      img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461",
-      type: "LUXURY",
-    },
-    {
-      name: "Standard Room",
-      price: 1500,
-      rating: 4.2,
-      img: "https://images.unsplash.com/photo-1590490360182-c33d57733427",
-      type: "BUDGET",
-    },
-  ];
+  const navigate = useNavigate();
 
+  // 🔥 FETCH ROOMS
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/rooms");
+        setRooms(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchRooms();
+  }, []);
+
+  // 🔥 BOOK
+  const handleBooking = async (room) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      alert("Login first ❌");
+      return;
+    }
+
+    try {
+      await axios.post("http://localhost:5000/api/bookings", {
+        userId: user.email,
+        roomId: room.name,
+        date: new Date()
+      });
+
+      alert("Booked ✅");
+
+    } catch (err) {
+      alert("Booking failed ❌");
+    }
+  };
+
+  // 🔥 VIEW
+  const handleView = (room) => {
+    navigate("/room/1", { state: room });
+  };
+
+  // 🔥 FILTER
   const filteredRooms = rooms.filter((r) =>
     r.name.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="rooms-container">
-      {/* HEADER */}
-      <div className="header">
-        <h1>🏨 Our Rooms & Suites</h1>
-        <p>Choose your perfect stay</p>
-      </div>
+    <div style={{ padding: "30px", background: "#f8fafc", minHeight: "100vh" }}>
+
+      <h1 style={{ textAlign: "center" }}>🏨 Our Rooms</h1>
 
       {/* SEARCH */}
-      <div className="search-box">
+      <div style={{ textAlign: "center", margin: "20px" }}>
         <input
           placeholder="Search rooms..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          style={searchBox}
         />
       </div>
 
-      {/* ROOMS GRID */}
-      <div className="room-grid">
-        {filteredRooms.map((room, i) => (
-          <div className="room-card" key={i}>
-            {/* IMAGE */}
-            <div className="image-box">
-              <img src={room.img} alt="" />
+      {/* GRID */}
+      <div style={grid}>
+        {filteredRooms.map((room) => (
+          <div key={room._id} style={card}>
 
-              <span
-                className={`tag ${
-                  room.type === "LUXURY"
-                    ? "gold"
-                    : room.type === "STANDARD"
-                    ? "blue"
-                    : "green"
-                }`}
-              >
-                {room.type}
-              </span>
+            <img src={room.img} alt="" style={imgStyle} />
+
+            <h3>{room.name}</h3>
+            <p>⭐ {room.rating}</p>
+            <h2>₹{room.price}</h2>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button style={bookBtn} onClick={() => handleBooking(room)}>
+                Book
+              </button>
+
+              <button style={viewBtn} onClick={() => handleView(room)}>
+                View
+              </button>
             </div>
 
-            {/* CONTENT */}
-            <div className="content">
-              <h3>{room.name}</h3>
-
-              <p className="rating">
-                ⭐ {room.rating} | Free WiFi • AC • TV
-              </p>
-
-              <h2>₹{room.price}</h2>
-
-              <div className="btn-group">
-                <button className="book-btn">Book</button>
-                <button className="view-btn">View</button>
-              </div>
-            </div>
           </div>
         ))}
       </div>
+
     </div>
   );
 }
+
+/* STYLES */
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
+  gap: "20px"
+};
+
+const card = {
+  background: "white",
+  padding: "15px",
+  borderRadius: "10px",
+  boxShadow: "0 5px 15px rgba(0,0,0,0.1)"
+};
+
+const imgStyle = {
+  width: "100%",
+  height: "150px",
+  objectFit: "cover",
+  borderRadius: "8px"
+};
+
+const searchBox = {
+  padding: "10px",
+  width: "300px",
+  borderRadius: "6px",
+  border: "1px solid #ccc"
+};
+
+const bookBtn = {
+  flex: 1,
+  padding: "10px",
+  background: "#f59e0b",
+  color: "white",
+  border: "none",
+  borderRadius: "6px"
+};
+
+const viewBtn = {
+  flex: 1,
+  padding: "10px",
+  background: "#e5e7eb",
+  border: "none",
+  borderRadius: "6px"
+};
 
 export default Rooms;

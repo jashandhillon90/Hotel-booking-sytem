@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import Rooms from "./pages/Rooms";
 import Booking from "./pages/Booking";
 import Admin from "./pages/Admin";
+import MyBookings from "./pages/MyBookings";
+import RoomDetails from "./pages/RoomDetails";
 function App() {
   return (
     <BrowserRouter>
@@ -19,6 +21,8 @@ function App() {
           <Route path="/rooms" element={<Rooms />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
+          <Route path="/room/:id" element={<RoomDetails />} />
         </Routes>
       </div>
     </BrowserRouter>

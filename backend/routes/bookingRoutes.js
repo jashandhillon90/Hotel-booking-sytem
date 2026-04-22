@@ -8,6 +8,10 @@ router.post("/", async (req, res) => {
   try {
     const { roomId, date, userId } = req.body;
 
+    if (!roomId || !date || !userId) {
+      return res.status(400).json({ msg: "All fields required" });
+    }
+
     const now = new Date();
 
     // check if already booked OR locked
@@ -21,7 +25,9 @@ router.post("/", async (req, res) => {
     });
 
     if (existing) {
-      return res.json("❌ Room already booked or temporarily locked");
+      return res.status(400).json({
+        msg: "❌ Room already booked or temporarily locked"
+      });
     }
 
     // lock for 2 minutes
@@ -36,13 +42,13 @@ router.post("/", async (req, res) => {
       expiresAt: lockTime
     });
 
-    res.json({
+    res.status(201).json({
       msg: "✅ Room locked for 2 minutes. Complete booking!",
       booking
     });
 
   } catch (err) {
-    res.status(500).json("Server Error");
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 });
 
@@ -51,11 +57,15 @@ router.put("/confirm/:id", async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
-    if (!booking) return res.json("Booking not found");
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
 
     // check expiry
     if (!booking.lockedUntil || booking.lockedUntil < new Date()) {
-      return res.json("❌ Booking expired. Try again.");
+      return res.status(400).json({
+        msg: "❌ Booking expired. Try again."
+      });
     }
 
     booking.status = "confirmed";
@@ -64,10 +74,10 @@ router.put("/confirm/:id", async (req, res) => {
 
     await booking.save();
 
-    res.json("✅ Booking confirmed");
+    res.json({ msg: "✅ Booking confirmed" });
 
   } catch (err) {
-    res.status(500).json("Server Error");
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 });
 
@@ -76,7 +86,9 @@ router.put("/cancel/:id", async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
 
-    if (!booking) return res.json("Booking not found");
+    if (!booking) {
+      return res.status(404).json({ msg: "Booking not found" });
+    }
 
     booking.status = "cancelled";
     booking.lockedUntil = null;
@@ -84,10 +96,10 @@ router.put("/cancel/:id", async (req, res) => {
 
     await booking.save();
 
-    res.json("❌ Booking cancelled");
+    res.json({ msg: "❌ Booking cancelled" });
 
   } catch (err) {
-    res.status(500).json("Server Error");
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 });
 
@@ -97,7 +109,7 @@ router.get("/", async (req, res) => {
     const bookings = await Booking.find().sort({ createdAt: -1 });
     res.json(bookings);
   } catch (err) {
-    res.status(500).json("Server Error");
+    res.status(500).json({ msg: "Server Error", error: err.message });
   }
 });
 

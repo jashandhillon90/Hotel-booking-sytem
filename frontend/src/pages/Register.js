@@ -1,210 +1,134 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("user");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const navigate = useNavigate();
 
-  const handleRegister = () => {
-    if (!name || !email || !password || !confirmPassword) {
-      setError("Please fill in all fields");
+  const handleRegister = async () => {
+    if (!name || !email || !password) {
+      setError("Please fill all fields");
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        { name, email, password, role }
+      );
+
+      setSuccess("Account created successfully ");
+      setError("");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+
+    } catch (err) {
+      setError(err.response?.data || "Registration failed");
     }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
-      return;
-    }
-
-    setSuccess("Account created successfully! Redirecting...");
-    setError("");
-
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background:
-          "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1590490360182-c33d57733427)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          background: "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(10px)",
-          padding: "30px",
-          borderRadius: "12px",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
-        }}
-      >
-        <h2 style={{ textAlign: "center", color: "#1a365d" }}>
-          Create Account ✨
-        </h2>
+    <div style={wrapper}>
+      <div style={card}>
+        <h2 style={{ textAlign: "center" }}>Create Account </h2>
 
-        <p
-          style={{
-            textAlign: "center",
-            marginBottom: "20px",
-            color: "#666",
-            fontSize: "14px",
-          }}
-        >
-          Join LuxeStay and book your dream stay
-        </p>
-
-        {error && (
-          <div
-            style={{
-              background: "#ffebee",
-              color: "#c62828",
-              padding: "10px",
-              borderRadius: "8px",
-              marginBottom: "15px",
-              fontSize: "13px",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            style={{
-              background: "#e8f5e9",
-              color: "#2e7d32",
-              padding: "10px",
-              borderRadius: "8px",
-              marginBottom: "15px",
-              fontSize: "13px",
-            }}
-          >
-            {success}
-          </div>
-        )}
+        {error && <p style={errorBox}>{error}</p>}
+        {success && <p style={successBox}>{success}</p>}
 
         <input
-          type="text"
           placeholder="Full Name"
           value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setError("");
-          }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "12px",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-          }}
+          onChange={(e) => setName(e.target.value)}
+          style={input}
         />
 
         <input
           type="email"
-          placeholder="Email Address"
+          placeholder="Email"
           value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setError("");
-          }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "12px",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-          }}
+          onChange={(e) => setEmail(e.target.value)}
+          style={input}
         />
 
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            setError("");
-          }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "12px",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-          }}
+          onChange={(e) => setPassword(e.target.value)}
+          style={input}
         />
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => {
-            setConfirmPassword(e.target.value);
-            setError("");
-          }}
-          style={{
-            width: "100%",
-            padding: "12px",
-            marginBottom: "18px",
-            borderRadius: "8px",
-            border: "1px solid #ddd",
-          }}
-        />
-
-        <button
-          onClick={handleRegister}
-          style={{
-            width: "100%",
-            padding: "12px",
-            background: "linear-gradient(135deg, #f59e0b, #d97706)",
-            color: "white",
-            borderRadius: "8px",
-            fontWeight: "700",
-            fontSize: "15px",
-          }}
+        {/* 🔥 ROLE SELECT */}
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          style={input}
         >
-          Create Account
+          <option value="user">Register as User</option>
+          <option value="admin">Register as Admin</option>
+        </select>
+
+        <button onClick={handleRegister} style={btn}>
+          Register
         </button>
 
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "18px",
-            fontSize: "13px",
-          }}
-        >
-          Already have an account?{" "}
-          <Link to="/" style={{ color: "#d97706" }}>
-            Sign in
-          </Link>
-        </p>
-
-        <p style={{ fontSize: "12px", color: "#16a34a", marginTop: "10px", textAlign: "center" }}>
-          ✔ Secure Registration
+        <p style={{ textAlign: "center", marginTop: "10px" }}>
+          Already have account?{" "}
+          <Link to="/login">Login</Link>
         </p>
       </div>
     </div>
   );
 }
+
+/* 🔥 STYLES */
+const wrapper = {
+  height: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background:
+    "linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(https://images.unsplash.com/photo-1590490360182-c33d57733427)",
+  backgroundSize: "cover"
+};
+
+const card = {
+  background: "white",
+  padding: "30px",
+  borderRadius: "10px",
+  width: "320px"
+};
+
+const input = {
+  width: "100%",
+  margin: "10px 0",
+  padding: "10px"
+};
+
+const btn = {
+  width: "100%",
+  padding: "10px",
+  background: "#22c55e",
+  color: "white"
+};
+
+const errorBox = {
+  color: "red",
+  fontSize: "14px"
+};
+
+const successBox = {
+  color: "green",
+  fontSize: "14px"
+};
 
 export default Register;
