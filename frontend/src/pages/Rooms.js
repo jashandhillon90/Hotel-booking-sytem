@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import BASE_URL from "../api";
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
@@ -12,7 +13,7 @@ function Rooms() {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/rooms");
+        const res = await axios.get(`${BASE_URL}/api/rooms`);
         setRooms(res.data);
       } catch (err) {
         console.log(err);
@@ -32,7 +33,7 @@ function Rooms() {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/bookings", {
+      await axios.post(`${BASE_URL}/api/bookings`, {
         userId: user.email,
         roomId: room.name,
         date: new Date()

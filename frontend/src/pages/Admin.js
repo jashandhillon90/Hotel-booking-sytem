@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import BASE_URL from "../api";
+
 
 function Admin() {
   const [rooms, setRooms] = useState([]);
@@ -16,8 +18,8 @@ function Admin() {
   // 🔥 FETCH DATA
   const fetchData = async () => {
     try {
-      const roomRes = await axios.get("http://localhost:5000/api/rooms");
-      const bookingRes = await axios.get("http://localhost:5000/api/bookings");
+      const roomRes = await axios.get(`${BASE_URL}/api/rooms`);
+      const bookingRes = await axios.get(`${BASE_URL}/api/bookings`);
 
       setRooms(roomRes.data);
       setBookings(bookingRes.data);
@@ -39,7 +41,7 @@ function Admin() {
 
     try {
       if (editId) {
-        await axios.put(`http://localhost:5000/api/rooms/${editId}`, {
+        await axios.put(`${BASE_URL}/api/rooms/${editId}`, {
           name,
           price,
           img,
@@ -49,7 +51,7 @@ function Admin() {
 
         alert("Room Updated ✅");
       } else {
-        await axios.post("http://localhost:5000/api/rooms", {
+        await axios.post(`${BASE_URL}/api/rooms`, {
           name,
           price,
           img,
@@ -78,7 +80,7 @@ function Admin() {
   // 🔥 DELETE ROOM
   const deleteRoom = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/rooms/${id}`);
+      await axios.delete(`${BASE_URL}/api/rooms/${id}`);
       alert("Deleted ❌");
       fetchData();
     } catch (err) {
@@ -98,12 +100,12 @@ function Admin() {
 
   // 🔥 BOOKING ACTIONS
   const confirmBooking = async (id) => {
-    await axios.put(`http://localhost:5000/api/bookings/confirm/${id}`);
+    await axios.put(`${BASE_URL}/api/bookings/confirm/${id}`);
     fetchData();
   };
 
   const cancelBooking = async (id) => {
-    await axios.put(`http://localhost:5000/api/bookings/cancel/${id}`);
+    await axios.put(`${BASE_URL}/api/bookings/cancel/${id}`);
     fetchData();
   };
 

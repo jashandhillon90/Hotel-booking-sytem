@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import BASE_URL from "../api";
 
 function BookingModal({ room, onClose }) {
   const [date, setDate] = useState("");
@@ -26,7 +27,7 @@ function BookingModal({ room, onClose }) {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        "http://localhost:5000/api/bookings",
+        `${BASE_URL}/api/bookings`,
         {
           userId: user.email,
           roomId: room.name,
