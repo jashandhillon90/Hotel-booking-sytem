@@ -15,7 +15,7 @@ function MyBookings() {
         const res = await axios.get(`${BASE_URL}/api/bookings`);
 
         const myBookings = res.data.filter(
-          (b) => b.userId === user.email
+          (b) => String(b.userId) === String(user.email)
         );
 
         setBookings(myBookings);

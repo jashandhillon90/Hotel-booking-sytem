@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import BASE_URL from "../api";
 
-
 function Admin() {
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [pendingAdmins, setPendingAdmins] = useState([]);
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -20,9 +20,12 @@ function Admin() {
     try {
       const roomRes = await axios.get(`${BASE_URL}/api/rooms`);
       const bookingRes = await axios.get(`${BASE_URL}/api/bookings`);
+      const pendingRes = await axios.get(`${BASE_URL}/api/auth/pending`);
 
       setRooms(roomRes.data);
       setBookings(bookingRes.data);
+      setPendingAdmins(pendingRes.data);
+
     } catch (err) {
       console.log(err);
     }
@@ -31,6 +34,20 @@ function Admin() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // 🔥 APPROVE ADMIN
+  const approveAdmin = async (id) => {
+    await axios.put(`${BASE_URL}/api/auth/approve/${id}`);
+    alert("Approved ✅");
+    fetchData();
+  };
+
+  // 🔥 REJECT ADMIN
+  const rejectAdmin = async (id) => {
+    await axios.delete(`${BASE_URL}/api/auth/reject/${id}`);
+    alert("Rejected ❌");
+    fetchData();
+  };
 
   // 🔥 ADD / UPDATE ROOM
   const handleRoom = async () => {
@@ -48,7 +65,6 @@ function Admin() {
           type,
           rating: Number(rating)
         });
-
         alert("Room Updated ✅");
       } else {
         await axios.post(`${BASE_URL}/api/rooms`, {
@@ -58,11 +74,9 @@ function Admin() {
           type,
           rating: Number(rating)
         });
-
         alert("Room Added ✅");
       }
 
-      // RESET
       setName("");
       setPrice("");
       setImg("");
@@ -72,23 +86,16 @@ function Admin() {
 
       fetchData();
 
-    } catch (err) {
+    } catch {
       alert("Error ❌");
     }
   };
 
-  // 🔥 DELETE ROOM
   const deleteRoom = async (id) => {
-    try {
-      await axios.delete(`${BASE_URL}/api/rooms/${id}`);
-      alert("Deleted ❌");
-      fetchData();
-    } catch (err) {
-      alert("Delete failed ❌");
-    }
+    await axios.delete(`${BASE_URL}/api/rooms/${id}`);
+    fetchData();
   };
 
-  // 🔥 EDIT ROOM
   const editRoom = (room) => {
     setName(room.name);
     setPrice(room.price);
@@ -98,7 +105,7 @@ function Admin() {
     setEditId(room._id);
   };
 
-  // 🔥 BOOKING ACTIONS
+  // 🔥 BOOKINGS
   const confirmBooking = async (id) => {
     await axios.put(`${BASE_URL}/api/bookings/confirm/${id}`);
     fetchData();
@@ -111,36 +118,49 @@ function Admin() {
 
   return (
     <div style={{ padding: "30px", background: "#0f172a", color: "white", minHeight: "100vh" }}>
-      
+
       <h1>Admin Dashboard 👨‍💼</h1>
 
+      {/* ================= PENDING ADMINS ================= */}
+      <h2 style={{ marginTop: "20px" }}>Pending Admin Requests 🧑‍💼</h2>
+
+      {pendingAdmins.length === 0 ? (
+        <p>No pending requests</p>
+      ) : (
+        pendingAdmins.map((u) => (
+          <div key={u._id} style={card}>
+            <h3>{u.name}</h3>
+            <p>{u.email}</p>
+
+            <button onClick={() => approveAdmin(u._id)} style={greenBtn}>
+              Approve
+            </button>
+
+            <button onClick={() => rejectAdmin(u._id)} style={redBtn}>
+              Reject
+            </button>
+          </div>
+        ))
+      )}
+
       {/* ================= ROOMS ================= */}
-      <h2 style={{ marginTop: "20px" }}>Manage Rooms 🏨</h2>
+      <h2 style={{ marginTop: "30px" }}>Manage Rooms 🏨</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={input} />
-        <input placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} style={input} />
-        <input placeholder="Image URL" value={img} onChange={(e) => setImg(e.target.value)} style={input} />
+      <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={input} />
+      <input placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} style={input} />
+      <input placeholder="Image URL" value={img} onChange={(e) => setImg(e.target.value)} style={input} />
+      <input placeholder="Rating" value={rating} onChange={(e) => setRating(e.target.value)} style={input} />
 
-        <input
-          placeholder="Rating (1-5)"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-          style={input}
-        />
+      <select value={type} onChange={(e) => setType(e.target.value)} style={input}>
+        <option>STANDARD</option>
+        <option>LUXURY</option>
+        <option>BUDGET</option>
+      </select>
 
-        <select value={type} onChange={(e) => setType(e.target.value)} style={input}>
-          <option>STANDARD</option>
-          <option>LUXURY</option>
-          <option>BUDGET</option>
-        </select>
+      <button onClick={handleRoom} style={greenBtn}>
+        {editId ? "Update Room" : "Add Room"}
+      </button>
 
-        <button onClick={handleRoom} style={greenBtn}>
-          {editId ? "Update Room" : "Add Room"}
-        </button>
-      </div>
-
-      {/* ROOM LIST */}
       <div style={grid}>
         {rooms.map((r) => (
           <div key={r._id} style={card}>
@@ -161,45 +181,27 @@ function Admin() {
       {bookings.length === 0 ? (
         <p>No bookings yet</p>
       ) : (
-        <div style={tableBox}>
-          <table style={{ width: "100%" }}>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Room</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
+        bookings.map((b) => (
+          <div key={b._id} style={card}>
+            <p><b>User:</b> {b.userId}</p>
+            <p><b>Room:</b> {b.roomId}</p>
+            <p><b>Status:</b> {b.status}</p>
 
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b._id}>
-                  <td>{b.userId}</td>
-                  <td>{b.roomId}</td>
-                  <td>{new Date(b.date).toLocaleDateString()}</td>
-                  <td>{b.status}</td>
+            {b.status === "pending" && (
+              <>
+                <button onClick={() => confirmBooking(b._id)} style={greenBtn}>
+                  Accept
+                </button>
 
-                  <td>
-                    {b.status === "pending" && (
-                      <>
-                        <button onClick={() => confirmBooking(b._id)} style={greenBtn}>
-                          Accept
-                        </button>
-
-                        <button onClick={() => cancelBooking(b._id)} style={redBtn}>
-                          Reject
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                <button onClick={() => cancelBooking(b._id)} style={redBtn}>
+                  Reject
+                </button>
+              </>
+            )}
+          </div>
+        ))
       )}
+
     </div>
   );
 }
@@ -250,13 +252,6 @@ const imgStyle = {
   width: "100%",
   height: "150px",
   objectFit: "cover"
-};
-
-const tableBox = {
-  background: "#1e293b",
-  padding: "20px",
-  borderRadius: "10px",
-  marginTop: "20px"
 };
 
 export default Admin;

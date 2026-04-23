@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import BASE_URL from "../api";
+import BookingModal from "../components/BookingModal"; // 🔥 added
 
 function Rooms() {
   const [rooms, setRooms] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState(null); // 🔥 added
 
   const navigate = useNavigate();
 
@@ -23,8 +25,8 @@ function Rooms() {
     fetchRooms();
   }, []);
 
-  // 🔥 BOOK
-  const handleBooking = async (room) => {
+  // 🔥 OPEN MODAL (FIXED)
+  const handleBooking = (room) => {
     const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
@@ -32,18 +34,7 @@ function Rooms() {
       return;
     }
 
-    try {
-      await axios.post(`${BASE_URL}/api/bookings`, {
-        userId: user.email,
-        roomId: room.name,
-        date: new Date()
-      });
-
-      alert("Booked ✅");
-
-    } catch (err) {
-      alert("Booking failed ❌");
-    }
+    setSelectedRoom(room);
   };
 
   // 🔥 VIEW
@@ -95,6 +86,14 @@ function Rooms() {
           </div>
         ))}
       </div>
+
+      {/* 🔥 BOOKING MODAL */}
+      {selectedRoom && (
+        <BookingModal
+          room={selectedRoom}
+          onClose={() => setSelectedRoom(null)}
+        />
+      )}
 
     </div>
   );
