@@ -1,25 +1,38 @@
+
 import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema({
-  userId: String,
-  roomId: String,
-  date: String,
+  userId: String,
+  roomId: String,
 
-  status: {
-    type: String,
-    default: "pending"
-  },
+  // 🔥 FIXED
+  date: {
+    type: Date,
+    required: true
+  },
 
-  lockedUntil: {
-    type: Date,
-    default: null
-  },
+  status: {
+    type: String,
+    default: "pending"
+  },
 
-  expiresAt: {
-    type: Date,
-    default: () => new Date(Date.now() + 2 * 60 * 1000) // 2 min TTL
-  }
-});
+  lockedUntil: {
+    type: Date,
+    default: null
+  },
+
+  expiresAt: {
+    type: Date,
+    default: () => new Date(Date.now() + 2 * 60 * 1000)
+  }
+
+}, { timestamps: true });
+
+/* 🔥 UNIQUE ONLY FOR CONFIRMED */
+bookingSchema.index(
+  { roomId: 1, date: 1 },
+  { unique: true, partialFilterExpression: { status: "confirmed" } }
+);
 
 /* 🔥 AUTO DELETE EXPIRED LOCKS */
 bookingSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
